@@ -9,7 +9,7 @@ export const loadAndProcessData = () =>
       d3.json('https://unpkg.com/visionscarto-world-atlas@0.0.6/world/50m.json')
     ])
     .then(([unData, topoJSONdata]) => {
-      console.log(unData);
+      // console.log(unData);
       const rowById = unData.reduce((accumulator, d) => {
         accumulator[d['Country code']] = d;
         return accumulator;
@@ -24,7 +24,7 @@ export const loadAndProcessData = () =>
       const featuresWithPopulation = countries.features
         .filter(d => d.properties['2020'])
         .map(d => {
-          d.properties['2020'] = +d.properties['2020'].replace(/ /g, '');
+          d.properties['2020'] = +d.properties['2020'].replace(/ /g, '') * 1000;
           return d;
         });
 

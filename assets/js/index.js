@@ -5,17 +5,22 @@
 //   zoom,
 //   event,
 //   scaleOrdinal,
-//   schemeSpectral
+//   schemeSpectral,
+//   scaleSqrt,
+//   max,
+//   format
 // } from 'd3';
 
 import { loadAndProcessData } from './loadAndProcessData.js';
 import { colorLegend } from './colorLegend.js';
+import { sizeLegend } from './sizeLegend.js';
+// import { format } from 'path';
 
 const svg = d3.select('svg');
 
 const projection = d3.geoNaturalEarth1();
 const pathGenerator = d3.geoPath().projection(projection);
-const radiusScale = d3.scaleSqrt();
+
 //accessor function
 const radiusValue = d => d.properties['2020'];
 
@@ -37,11 +42,15 @@ svg.call(d3.zoom().on('zoom', () => {
 // // const colorValue = d => d.properties.income_grp;
 // const colorValue = d => d.properties.economy;
 
+const populationFormat = d3.format(',');
+
 loadAndProcessData().then(countries => {
 
-  radiusScale
+  const sizeScale = d3.scaleSqrt()
     .domain([0, d3.max(countries.features, radiusValue)])
-    .range([0, 20]);
+    .range([0, 33]);
+
+
 
   // colorScale
   //   .domain(countries.features.map(colorValue))
@@ -60,17 +69,49 @@ loadAndProcessData().then(countries => {
     .enter().append('path')
     .attr('class', 'country')
     .attr('d', pathGenerator)
-    .attr('fill', d => d.properties['2020'] ? 'green' : 'red')
-    // .attr('fill', d => colorScale(colorValue(d)))
+    .attr('fill', d => d.properties['2020'] ? '#e8e8e8' : '#fec1c1')
     .append('title')
-    .text(d => d.id);
-  // ?    .text(d => d.properties.name + ': ' + colorValue(d));
+    // to display column names in console
+    // .text(d => {
+    //   console.log(d.properties);
+    //   return populationFormat(radiusValue(d));
+    // })
+    .text(d =>
+      isNaN(radiusValue(d))
+        ? 'Missing Data'
+        : [
+          d.properties['Region, subregion, country or area *'],
+          populationFormat(radiusValue(d))
+        ].join(': ')
+    );
+
+  // console.log(radiusValue(countries.features[0]));
+  countries.featuresWithPopulation.forEach(d => {
+    d.properties.projected = projection(d3.geoCentroid(d));
+  });
+
 
   g.selectAll('circle').data(countries.featuresWithPopulation)
     .enter().append('circle')
     .attr('class', 'country-circle')
     //centroid
-    .attr('cx', d => projection(d3.geoCentroid(d))[0])
-    .attr('cy', d => projection(d3.geoCentroid(d))[1])
-    .attr('r', d => radiusScale(radiusValue(d)));
+    .attr('cx', d => d.properties.projected[0])
+    .attr('cy', d => d.properties.projected[1])
+    .attr('r', d => sizeScale(radiusValue(d)));
+
+  g.append('g')
+    .attr('transform', `translate(55,215)`)
+    .call(sizeLegend, {
+      sizeScale,
+      spacing: 45,
+      textOffset: 10,
+      numTicks: 5,
+      tickFormat: populationFormat
+    })
+    .append('text')
+    .attr('class', 'legend-title')
+    .text('Population')
+    .attr('y', -45)
+    .attr('x', -30);
+
 });

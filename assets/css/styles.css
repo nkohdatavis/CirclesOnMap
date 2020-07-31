@@ -4,7 +4,7 @@ body {
 }
 
 .sphere {
-  fill: #4242e4;
+  fill: #eaeaea;
 }
 
 .country {
@@ -13,16 +13,25 @@ body {
 }
 
 .country:hover {
-  fill: red;
+  fill: #74e1d8;
 }
 
 .tick text {
-  font-size: 1em;
-  fill: black;
+  font-size: 1.3em;
+  fill: #444444;
   font-family: sans-serif;
 }
 
-.tick circle {
+.tick circle, .country-circle {
+  fill:#00d1bf;
+  fill-opacity: 0.489216;
   stroke: black;
-  stroke-opacity: 0.5;
+  stroke-width: 0.3;
+  pointer-events: none;
+}
+ 
+.legend-title {
+  font-size: 2.2em;
+  fill: #444444;
+  font-family: sans-serif;
 }
